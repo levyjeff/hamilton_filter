@@ -25,6 +25,9 @@ def hamilton_filter(data, h=8, p=4):
                           name=f'{data.name}.cycle')
         trend.name = f'{data.name}.trend'
         rand.name = f'{data.name}.rand'
+        #puts the correct NaNs into the series
+        d = pd.concat([data, cycle, trend, rand])
+        cycle, trend, rand = d[f'{data.name}.cycle'], d[f'{data.name}.trend'], d[f'{data.name}.rand']
     else:
         cycle = res.resid_pearson
 
