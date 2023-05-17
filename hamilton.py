@@ -14,7 +14,7 @@ def hamilton_filter(data, h=8, p=4):
     new_cols = [shift(data, s) for s in range(h, h+p)]
 
     exog = sm.add_constant(np.array(new_cols).transpose())
-    model = sm.OLS(endog=data, exog=exog, missing='drop')
+    model = sm.GLM(endog=data, exog=exog, missing='drop')
     res = model.fit()
 
     trend = res.fittedvalues
@@ -32,6 +32,7 @@ def hamilton_filter(data, h=8, p=4):
 
 
 if __name__ == '__main__':
+    import pandas as pd
     import matplotlib.pyplot as plt
 
     gdpc1 = pd.read_csv('gdpc1.csv', parse_dates=['DATE'], index_col='DATE')
