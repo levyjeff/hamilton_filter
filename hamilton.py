@@ -1,8 +1,5 @@
-import os
-import pandas as pd
 import numpy as np
-import statsmodels.formula.api as smf
-import matplotlib.pyplot as plt
+import statsmodels.api as sm
 
 def hamilton_filter(data, h=8, p=4):
     #implementation of the Hamilton (2017) alternative to the HP filter
@@ -35,9 +32,9 @@ def hamilton_filter(data, h=8, p=4):
 
 
 if __name__ == '__main__':
-    path = r'C:\Users\Jeff Levy\Documents\GitHub\hamilton_filter'
+    import matplotlib.pyplot as plt
 
-    gdpc1 = pd.read_csv(os.path.join(path, 'gdpc1.csv'), parse_dates=['DATE'], index_col='DATE')
+    gdpc1 = pd.read_csv('gdpc1.csv', parse_dates=['DATE'], index_col='DATE')
     gdpc1['GDPC1'] = 100*np.log(gdpc1['GDPC1'])
     c, t, r = hamilton_filter(gdpc1['GDPC1'], h=8, p=4)
     df = pd.concat([gdpc1, t, c, r], axis=1)
