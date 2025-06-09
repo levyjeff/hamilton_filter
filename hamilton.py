@@ -1,5 +1,5 @@
 """
-Copyright (C) 2002 Jeffrey A Levy
+Copyright (C) 2022 Jeffrey A Levy
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ def hamilton_filter(data, h=8, p=4):
     Implementation of the Hamilton (2017) alternative to the HP filter.
     "It is also desirable with seasonal data to have both p and h be integer 
      multiples of the number of observations in a year. Hence, for quarterly 
-     data, my recommendation is p = 4 and h = 8" -James Hamilton
+     data, my recommendation is p = 4 and h = 8" - Hamilton 2018
 
     Arguments:
     data -- a Pandas series or Numpy array (required)
@@ -63,7 +63,6 @@ def hamilton_filter(data, h=8, p=4):
         cycle = res.resid_pearson
 
     return cycle, trend, rand
-
 
 if __name__ == '__main__':
     import pandas as pd
