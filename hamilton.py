@@ -1,8 +1,39 @@
+"""
+Copyright (C) 2002 Jeffrey A Levy
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+"""
+
 import numpy as np
 import statsmodels.api as sm
 
 def hamilton_filter(data, h=8, p=4):
-    #implementation of the Hamilton (2017) alternative to the HP filter
+    """
+    Implementation of the Hamilton (2017) alternative to the HP filter.
+    "It is also desirable with seasonal data to have both p and h be integer 
+     multiples of the number of observations in a year. Hence, for quarterly 
+     data, my recommendation is p = 4 and h = 8" -James Hamilton
+
+    Arguments:
+    data -- a Pandas series or Numpy array (required)
+    h -- look-ahead horizon based on two year business cycles (default 8 for quarterly data)
+    p -- lags (default 4 for quarterly data)
+
+    Returns:
+    cycle, trend, and random components matching the dtype of data 
+    """
 
     def shift(orig_series, n):
         #implements efficient (positive) shifting for non-Series dtypes
@@ -44,7 +75,7 @@ if __name__ == '__main__':
     c, t, r = hamilton_filter(gdpc1['GDPC1'], h=8, p=4)
     df = pd.concat([gdpc1, t, c, r], axis=1)
 
-    hp_c, hp_t = hpfilter(gdpc1['GDPC1'], lamb=129600)
+    hp_c, hp_t = hpfilter(gdpc1['GDPC1'], lamb=1600)
 
     fig, axs = plt.subplots(3, 1, figsize=(12,6), sharex=True)
     axs[0].plot(gdpc1.index, gdpc1['GDPC1'], 'k-')
