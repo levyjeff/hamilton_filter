@@ -18,8 +18,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 import numpy as np
 import statsmodels.api as sm
+import pandas as pd
 
-def hamilton_filter(data, h=8, p=4):
+def hamilton_filter(data: pd.Series, h: int=8, p: int=4) -> tuple[pd.Series, pd.Series, pd.Series]:
     """
     Implementation of the Hamilton (2017) alternative to the HP filter.
     "It is also desirable with seasonal data to have both p and h be integer 
@@ -27,7 +28,7 @@ def hamilton_filter(data, h=8, p=4):
      data, my recommendation is p = 4 and h = 8" - Hamilton 2018
 
     Arguments:
-    data -- a Pandas series or Numpy array (required)
+    data -- a Pandas Series (required)
     h -- look-ahead horizon based on two year business cycles (default 8 for quarterly data)
     p -- lags, corresponding to seasonality component of h (default 4 for quarterly data)
 
@@ -35,18 +36,9 @@ def hamilton_filter(data, h=8, p=4):
     cycle, trend, and random components matching the dtype of data 
     """
 
-    # def shift(orig_series, n):
-    #     #implements efficient (positive) shifting for non-Series dtypes
-    #     new_series = np.empty_like(orig_series)
-    #     new_series[:n] = np.NaN
-    #     new_series[n:] = orig_series[:-n]
-    #     return new_series
-
-    # new_cols = [shift(data, s) for s in range(h, h+p)]
-
-    # exog = sm.add_constant(np.array(new_cols).transpose())
     name = data.name
     data = data.to_frame()
+
     for i in range(p):
         data[name+f'_{i}'] = data[name].shift(h+i)
 
@@ -55,22 +47,19 @@ def hamilton_filter(data, h=8, p=4):
 
     trend = res.fittedvalues
     rand = data[name] - data[name].shift(h)
-    if isinstance(data, pd.DataFrame):
-        cycle = pd.Series(res.resid_pearson, 
-                          index=trend.index, 
-                          name=f'{name}.cycle')
-        trend.name = f'{name}.trend'
-        rand.name = f'{name}.rand'
-        #puts the correct NaNs into the series
-        d = pd.concat([data, cycle, trend, rand], axis=1)
-        cycle, trend, rand = d[f'{name}.cycle'], d[f'{name}.trend'], d[f'{name}.rand']
-    else:
-        cycle = res.resid_pearson
+
+    cycle = pd.Series(res.resid_pearson, 
+                        index=trend.index, 
+                        name=f'{name}.cycle')
+    trend.name = f'{name}.trend'
+    rand.name = f'{name}.rand'
+    #puts the correct NaNs into the series
+    d = pd.concat([data, cycle, trend, rand], axis=1)
+    cycle, trend, rand = d[f'{name}.cycle'], d[f'{name}.trend'], d[f'{name}.rand']
 
     return cycle, trend, rand
 
 if __name__ == '__main__':
-    import pandas as pd
     import matplotlib.pyplot as plt
     from statsmodels.tsa.filters.hp_filter import hpfilter
 
