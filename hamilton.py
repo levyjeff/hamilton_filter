@@ -67,6 +67,8 @@ if __name__ == '__main__':
     gdpc1['GDPC1'] = 100*np.log(gdpc1['GDPC1'])
     c, t, r = hamilton_filter(gdpc1['GDPC1'], h=8, p=4)
     df = pd.concat([gdpc1, t, c, r], axis=1)
+    # identical to results in Hamilton, compare to R package: 
+    # https://cran.r-project.org/web/packages/neverhpfilter/vignettes/Reproducing-Hamilton.html
 
     hp_c, hp_t = hpfilter(gdpc1['GDPC1'], lamb=1600)
 
