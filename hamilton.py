@@ -29,36 +29,41 @@ def hamilton_filter(data, h=8, p=4):
     Arguments:
     data -- a Pandas series or Numpy array (required)
     h -- look-ahead horizon based on two year business cycles (default 8 for quarterly data)
-    p -- lags (default 4 for quarterly data)
+    p -- lags, corresponding to seasonality component of h (default 4 for quarterly data)
 
     Returns:
     cycle, trend, and random components matching the dtype of data 
     """
 
-    def shift(orig_series, n):
-        #implements efficient (positive) shifting for non-Series dtypes
-        new_series = np.empty_like(orig_series)
-        new_series[:n] = np.NaN
-        new_series[n:] = orig_series[:-n]
-        return new_series
+    # def shift(orig_series, n):
+    #     #implements efficient (positive) shifting for non-Series dtypes
+    #     new_series = np.empty_like(orig_series)
+    #     new_series[:n] = np.NaN
+    #     new_series[n:] = orig_series[:-n]
+    #     return new_series
 
-    new_cols = [shift(data, s) for s in range(h, h+p)]
+    # new_cols = [shift(data, s) for s in range(h, h+p)]
 
-    exog = sm.add_constant(np.array(new_cols).transpose())
-    model = sm.GLM(endog=data, exog=exog, missing='drop')
+    # exog = sm.add_constant(np.array(new_cols).transpose())
+    name = data.name
+    data = data.to_frame()
+    for i in range(p):
+        data[name+f'_{i}'] = data[name].shift(h+i)
+
+    model = sm.GLM(endog=data.iloc[:,0], exog=sm.add_constant(data.iloc[:,1:]), missing='drop')
     res = model.fit()
 
     trend = res.fittedvalues
-    rand = data - shift(data, h)
-    if isinstance(data, pd.Series):
+    rand = data[name] - data[name].shift(h)
+    if isinstance(data, pd.DataFrame):
         cycle = pd.Series(res.resid_pearson, 
                           index=trend.index, 
-                          name=f'{data.name}.cycle')
-        trend.name = f'{data.name}.trend'
-        rand.name = f'{data.name}.rand'
+                          name=f'{name}.cycle')
+        trend.name = f'{name}.trend'
+        rand.name = f'{name}.rand'
         #puts the correct NaNs into the series
         d = pd.concat([data, cycle, trend, rand], axis=1)
-        cycle, trend, rand = d[f'{data.name}.cycle'], d[f'{data.name}.trend'], d[f'{data.name}.rand']
+        cycle, trend, rand = d[f'{name}.cycle'], d[f'{name}.trend'], d[f'{name}.rand']
     else:
         cycle = res.resid_pearson
 
